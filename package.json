@@ -1,0 +1,16 @@
+{
+  "name": "nxpcfreq_sourcesender",
+  "version": "1.0.0",
+  "description": "for nxpc",
+  "main": "index.js",
+  "scripts": {
+    "watch":"node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "command-line-args": "^5.1.1",
+    "node-osc": "^4.1.4"
+  }
+}
