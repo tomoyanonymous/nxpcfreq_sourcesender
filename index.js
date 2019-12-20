@@ -1,53 +1,62 @@
-const fs = require('fs')
-const process= require('process')
-const path  = require('path')
-const  osc = require('node-osc')
-const commandLineArgs = require('command-line-args')
+const fs = require('fs');
+// const process= require('process');
+const path  = require('path');
+const  osc = require('node-osc');
+const commandLineArgs = require('command-line-args');
+const chokidar = require('chokidar');
 
-const cwd = process.cwd();
+// const cwd = process.cwd();
 
 
 const optionDefinitions = [
-  {
-    name: 'files',
-    type: String,
-    defaultValue: "chuck"
-  },
-  {
-    name: 'address',
-    type: String,
-    defaultValue: '127.0.0.1'
-  },
-  {
-    name: 'port',
-    type: Number,
-    defaultValue: 8888
-  }
+    {
+        name: 'files',
+        type: String,
+        defaultValue: "chuck"
+    },
+    {
+        name: 'address',
+        type: String,
+        defaultValue: '127.0.0.1'
+    },
+    {
+        name: 'port',
+        type: Number,
+        defaultValue: 8888
+    }
 ];
-
-
 const options = commandLineArgs(optionDefinitions);
 
+/*
+    create osc client
+*/
 const client = new osc.Client(options.address, options.port);
+console.log("OSC Address: " + options.address + ":" + options.port );
 
-console.log("OSC Address: " + options.address + ":" + options.port )
+/*
+    define watcher's callback functions
+*/
+const onReady = () => {
+    console.log("watching file under: '" + options.files + "'");
+};
+const onChange = (filepath) => {
+    console.log('/onChange', filepath);
 
-const filesender = (err, data) => {
-    if (err) throw err;    // 例外発生時の処理
-    client.send('/sourcecode',data)
-
-  }
-const filereader = (event,filename) =>{
-    if(event == 'change'){
-        console.log(event + ":" + filename)
-    client.send('/filename',filename)
-    fs.readFile(cwd + '/chuck/' + filename, 'utf-8', filesender)
-    }
+    const abspath = path.resolve('', filepath);
+    const filename = path.basename(filepath);
+    fs.readFile(abspath, 'utf-8', (err, data) => {
+        if(err) throw err;
+        client.send('/onChange', filename, data);
+    });
 }
 
-console.log("watching file under: '" + options.files + "'")
 
+/*
+    start watching files
+*/
+// fs.watch(options.files,{'recursive':true },filereader)
+const watcher = chokidar.watch( options.files, { persistent: true });
 
-fs.watch(options.files,{'recursive':true },filereader)
-
-
+watcher
+    .on('ready', onReady)
+    .on('change', onChange);
