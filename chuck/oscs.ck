@@ -1,4 +1,4 @@
-adc => Faust fck=>NRev rev  => dac;
+adc => Faust fck => dac;
 
 fck.eval(`
 att = hslider("attack",0.01,0.001,10,0.01);
@@ -21,7 +21,8 @@ osc(f) = os.lf_sawpos(f);
 
 siren = osc(0.05):*(20):+(0.2):osc:*(500):+(80):osc;
 ff = os.lf_sawpos(0.12):*(4000):+(100);
-process = siren :fi.resonhp(ff,2,12) : fbdelay(1.1,dtime):ba.downSample(8000):bitcrush(8):*(0.005);
+master = siren *(0.05):fi.resonhp(ff,2,12);
+process = master,master ;
 //process = os.oscp(1000,0):ba.downSample(100):bitcrush(4);
 `);
 
